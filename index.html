@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inbound Shipment Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --surface: #ffffff;
+    --surface2: #f8f9fb;
+    --border: #e2e6ed;
+    --border-focus: #4f7ef0;
+    --accent: #2d6ef5;
+    --accent-dim: rgba(45,110,245,0.08);
+    --accent-hover: #1a5ce0;
+    --green: #16a37a;
+    --green-dim: rgba(22,163,122,0.1);
+    --amber: #d97706;
+    --amber-dim: rgba(217,119,6,0.1);
+    --red: #dc2626;
+    --red-dim: rgba(220,38,38,0.08);
+    --purple: #7c3aed;
+    --purple-dim: rgba(124,58,237,0.08);
+    --text: #1a1f2e;
+    --text-muted: #6b7280;
+    --text-dim: #9ca3af;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 58px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-logo {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(45,110,245,0.3);
+  }
+  .header-logo svg { width: 17px; height: 17px; }
+  .header-title { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+  .header-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+  .header-sub { font-size: 12px; color: var(--text-muted); }
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--green-dim);
+    border: 1px solid rgba(22,163,122,0.2);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px; font-weight: 500; color: var(--green);
+    font-family: var(--mono);
+  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── Layout ── */
+  .main { max-width: 1440px; margin: 0 auto; padding: 24px 32px; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+  }
+  .tab {
+    font-size: 13px; font-weight: 500;
+    padding: 10px 20px;
+    border: none; cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-muted);
+    background: transparent;
+    display: flex; align-items: center; gap: 8px;
+    position: relative; bottom: -2px;
+    border-bottom: 2px solid transparent;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab .count {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1px 7px;
+    font-size: 10px; font-family: var(--mono); font-weight: 600; color: var(--text-muted);
+  }
+  .tab.active .count { background: var(--accent-dim); border-color: rgba(45,110,245,0.2); color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Form card ── */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .form-card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2);
+  }
+  .form-card-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .shipment-badge {
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    color: var(--accent); background: var(--accent-dim);
+    border: 1px solid rgba(45,110,245,0.2); border-radius: 6px; padding: 4px 12px;
+  }
+  .form-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.half { grid-column: span 2; }
+
+  label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  label .optional { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-dim); font-size: 10px; }
+
+  input, select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 8px 11px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    width: 100%;
+  }
+  input:focus, select:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(79,126,240,0.1);
+  }
+  input::placeholder { color: var(--text-dim); }
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+  }
+
+  /* Serial row — direct input + popup button */
+  .serial-row { display: flex; gap: 6px; align-items: center; }
+  .serial-row input {
+    flex: 1;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .serial-popup-btn {
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text-muted);
+    font-size: 16px;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .serial-popup-btn:hover { background: var(--accent-dim); border-color: rgba(45,110,245,0.3); color: var(--accent); }
+
+  /* Form footer */
+  .form-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    background: var(--surface2);
+  }
+  .btn {
+    font-size: 12px; font-weight: 600;
+    padding: 8px 18px; border-radius: 7px; border: none; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 3px 10px rgba(45,110,245,0.3); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg); color: var(--text); }
+
+  /* ── Table card ── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .table-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2);
+  }
+  .table-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .refresh-btn {
+    font-size: 11px; font-family: var(--mono); color: var(--text-muted);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 11px; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+  }
+  .refresh-btn:hover { color: var(--accent); border-color: rgba(45,110,245,0.3); background: var(--accent-dim); }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 10px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.7px;
+    padding: 10px 14px; text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2); white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafbfd; }
+  tbody td {
+    padding: 11px 14px; font-size: 13px; color: var(--text);
+    vertical-align: middle; max-width: 160px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .td-shipnum { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--accent); }
+  .td-date { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+  .td-mono { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+
+  .badge {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
+  }
+  .badge-box    { background: var(--amber-dim);  color: var(--amber);  border: 1px solid rgba(217,119,6,0.2); }
+  .badge-pallet { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(124,58,237,0.2); }
+  .badge-new    { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(22,163,122,0.2); }
+  .badge-used   { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(220,38,38,0.15); }
+
+  .action-btn {
+    font-size: 11px; font-weight: 600;
+    padding: 5px 10px; border-radius: 5px; border: none;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-complete   { background: var(--green-dim); color: var(--green); border: 1px solid rgba(22,163,122,0.2); }
+  .btn-complete:hover   { background: var(--green); color: #fff; }
+  .btn-reactivate { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(217,119,6,0.2); }
+  .btn-reactivate:hover { background: var(--amber); color: #fff; }
+
+  .empty-state { text-align: center; padding: 52px 24px; color: var(--text-dim); }
+  .empty-state svg { opacity: 0.35; margin-bottom: 10px; }
+  .empty-state p { font-size: 13px; color: var(--text-muted); }
+  .loading-row td { text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15,20,40,0.35);
+    backdrop-filter: blur(3px);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.18s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 460px; max-width: 90vw; max-height: 80vh; overflow-y: auto;
+    transform: scale(0.96) translateY(8px);
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+  }
+  .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+  .modal-header {
+    padding: 18px 22px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2); border-radius: 14px 14px 0 0;
+  }
+  .modal-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .modal-close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 17px; padding: 2px 6px; border-radius: 4px; transition: all 0.1s; }
+  .modal-close:hover { color: var(--text); background: var(--border); }
+  .modal-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 8px; }
+  .modal-hint { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .serial-input-row { display: flex; align-items: center; gap: 10px; }
+  .serial-index { font-family: var(--mono); font-size: 11px; color: var(--text-dim); width: 22px; text-align: right; flex-shrink: 0; }
+  .serial-text-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-family: var(--mono); font-size: 12px; padding: 7px 11px;
+    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .serial-text-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(79,126,240,0.1); }
+  .modal-footer {
+    padding: 14px 22px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+    background: var(--surface2); border-radius: 0 0 14px 14px;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 18px;
+    font-size: 12px; font-weight: 500; color: var(--text);
+    z-index: 1000; display: flex; align-items: center; gap: 9px;
+    transform: translateY(70px); opacity: 0;
+    transition: all 0.28s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: var(--shadow); max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .toast.success { border-color: rgba(22,163,122,0.3); }
+  .toast.success .toast-dot { background: var(--green); }
+  .toast.error { border-color: rgba(220,38,38,0.25); }
+  .toast.error .toast-dot { background: var(--red); }
+
+  .spinner { width: 13px; height: 13px; border: 2px solid rgba(45,110,245,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">
+      <svg viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="5" width="13" height="10" rx="1.5" stroke="white" stroke-width="1.5"/>
+        <path d="M5.5 5V3.5a.5.5 0 01.5-.5h5a.5.5 0 01.5.5V5" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M5.5 9.5h6M8.5 7.5v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="header-title">Inbound Shipment Tracker</span>
+    <div class="header-divider"></div>
+    <span class="header-sub">Geodis Warehouse · Receiving Log</span>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    Live
+  </div>
+</div>
+
+<div class="main">
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('active')">
+      Active Shipments <span class="count" id="activeCount">0</span>
+    </button>
+    <button class="tab" onclick="switchTab('completed')">
+      Completed Shipments <span class="count" id="completedCount">0</span>
+    </button>
+  </div>
+
+  <!-- ACTIVE TAB -->
+  <div class="tab-panel active" id="panel-active">
+    <div class="form-card">
+      <div class="form-card-header">
+        <span class="form-card-title">New Shipment Entry</span>
+        <span class="shipment-badge" id="nextShipmentNum">IN-????</span>
+      </div>
+      <div class="form-body">
+        <div class="form-group">
+          <label>Carrier</label>
+          <input type="text" id="f_carrier" placeholder="e.g. DHL, FedEx, UPS">
+        </div>
+        <div class="form-group">
+          <label>Date of Receipt</label>
+          <input type="date" id="f_date">
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="f_type">
+            <option value="">— Select —</option>
+            <option value="Box">Box</option>
+            <option value="Pallet">Pallet</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Condition</label>
+          <select id="f_condition">
+            <option value="">— Select —</option>
+            <option value="New">New</option>
+            <option value="Used">Used</option>
+          </select>
+        </div>
+        <div class="form-group half">
+          <label>Customer Name</label>
+          <input type="text" id="f_customer" placeholder="Customer name">
+        </div>
+        <div class="form-group">
+          <label>Quantity Received</label>
+          <input type="number" id="f_qty" min="1" placeholder="0" oninput="onQtyChange()">
+        </div>
+        <div class="form-group">
+          <label>PO Number</label>
+          <input type="text" id="f_po" placeholder="PO-XXXX">
+        </div>
+        <div class="form-group half">
+          <label>Product Description</label>
+          <input type="text" id="f_desc" placeholder="Brief description of items">
+        </div>
+        <div class="form-group half">
+          <label>Serial Number(s) <span class="optional">— type directly or use popup &nbsp;·&nbsp; optional</span></label>
+          <div class="serial-row">
+            <input type="text" id="f_serials" placeholder="SN-001, SN-002, SN-003… or leave blank">
+            <button class="serial-popup-btn" onclick="openSerialModal()" title="Open guided serial entry popup">⊞</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+        <button class="btn btn-primary" id="submitBtn" onclick="submitShipment()">
+          <span id="submitBtnText">Submit Shipment</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">Active Shipments</span>
+        <button class="refresh-btn" onclick="loadActive()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment #</th><th>Carrier</th><th>Date Received</th>
+              <th>Type</th><th>Customer</th><th>Condition</th>
+              <th>Qty</th><th>Description</th><th>Serials</th>
+              <th>PO Number</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="activeBody">
+            <tr class="loading-row"><td colspan="11"><span class="spinner"></span>&nbsp; Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETED TAB -->
+  <div class="tab-panel" id="panel-completed">
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">Completed Shipments</span>
+        <button class="refresh-btn" onclick="loadCompleted()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Shipment #</th><th>Carrier</th><th>Date Received</th>
+              <th>Type</th><th>Customer</th><th>Condition</th>
+              <th>Qty</th><th>Description</th><th>Serials</th>
+              <th>PO Number</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="completedBody">
+            <tr class="loading-row"><td colspan="11"><span class="spinner"></span>&nbsp; Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Serial Modal -->
+<div class="modal-overlay" id="serialModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Guided Serial Entry</span>
+      <button class="modal-close" onclick="closeSerialModal()">✕</button>
+    </div>
+    <div class="modal-body" id="serialInputs"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSerialModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmSerials()">Confirm Serials</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyoBke7y_qq6Y7mwQSccO1J5GDHV2cThO9E3ZoDeqqdSdeaGr0b0dd_pc7PMQy7dZGm/exec';
+
+let activeData = [];
+let completedData = [];
+
+window.onload = () => {
+  document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+  loadActive();
+  loadCompleted();
+};
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'active') || (i === 1 && tab === 'completed'));
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+async function apiCall(params) {
+  const url = WEB_APP_URL + '?' + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function loadActive() {
+  document.getElementById('activeBody').innerHTML =
+    '<tr class="loading-row"><td colspan="11"><span class="spinner"></span>&nbsp; Loading…</td></tr>';
+  try {
+    const data = await apiCall({ action: 'getShipments' });
+    activeData = data.rows || [];
+    renderActiveTable();
+    updateNextShipmentNum();
+  } catch(e) { showToast('Failed to load active shipments', 'error'); }
+}
+
+async function loadCompleted() {
+  document.getElementById('completedBody').innerHTML =
+    '<tr class="loading-row"><td colspan="11"><span class="spinner"></span>&nbsp; Loading…</td></tr>';
+  try {
+    const data = await apiCall({ action: 'getCompleted' });
+    completedData = data.rows || [];
+    renderCompletedTable();
+  } catch(e) { showToast('Failed to load completed shipments', 'error'); }
+}
+
+function renderActiveTable() {
+  const tbody = document.getElementById('activeBody');
+  document.getElementById('activeCount').textContent = activeData.length;
+  if (!activeData.length) {
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 3H8l-2 4h12l-2-4z"/></svg>
+      <p>No active shipments</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = [...activeData].reverse().map(r => buildRow(r, 'active')).join('');
+}
+
+function renderCompletedTable() {
+  const tbody = document.getElementById('completedBody');
+  document.getElementById('completedCount').textContent = completedData.length;
+  if (!completedData.length) {
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+      <p>No completed shipments</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = [...completedData].reverse().map(r => buildRow(r, 'completed')).join('');
+}
+
+function buildRow(row, type) {
+  const [shipNum, carrier, date, rtype, customer, condition, qty, desc, serials, po] = row;
+  const typeBadge = rtype === 'Pallet'
+    ? `<span class="badge badge-pallet">Pallet</span>`
+    : `<span class="badge badge-box">Box</span>`;
+  const condBadge = condition === 'New'
+    ? `<span class="badge badge-new">New</span>`
+    : `<span class="badge badge-used">Used</span>`;
+  const actionBtn = type === 'active'
+    ? `<button class="action-btn btn-complete" onclick="toggleStatus('${shipNum}')">✓ Complete</button>`
+    : `<button class="action-btn btn-reactivate" onclick="toggleStatus('${shipNum}')">↩ Reactivate</button>`;
+  const trunc = (s, n) => s && s.length > n ? s.substring(0, n) + '…' : (s || '—');
+
+  return `<tr>
+    <td class="td-shipnum">${shipNum}</td>
+    <td>${carrier || '—'}</td>
+    <td class="td-date">${date || '—'}</td>
+    <td>${typeBadge}</td>
+    <td>${customer || '—'}</td>
+    <td>${condBadge}</td>
+    <td style="font-weight:600;font-family:var(--mono)">${qty || '—'}</td>
+    <td title="${desc || ''}">${trunc(desc, 28)}</td>
+    <td class="td-mono" title="${serials || ''}">${trunc(serials, 28)}</td>
+    <td class="td-mono">${po || '—'}</td>
+    <td>${actionBtn}</td>
+  </tr>`;
+}
+
+function updateNextShipmentNum() {
+  const all = [...activeData, ...completedData];
+  let max = 0;
+  all.forEach(row => {
+    const val = row[0];
+    if (typeof val === 'string' && val.startsWith('IN-')) {
+      const n = parseInt(val.replace('IN-', ''), 10);
+      if (!isNaN(n) && n > max) max = n;
+    }
+  });
+  document.getElementById('nextShipmentNum').textContent = 'IN-' + String(max + 1).padStart(4, '0');
+}
+
+function onQtyChange() {
+  document.getElementById('f_serials').value = '';
+}
+
+// ── Serial modal ──────────────────────────────────────────
+function openSerialModal() {
+  const qty = parseInt(document.getElementById('f_qty').value, 10);
+  if (!qty || qty < 1) {
+    showToast('Enter Quantity Received first', 'error');
+    return;
+  }
+  const existing = document.getElementById('f_serials').value;
+  const existingList = existing ? existing.split(',').map(s => s.trim()) : [];
+
+  const body = document.getElementById('serialInputs');
+  body.innerHTML = `<p class="modal-hint">One text box per unit. All fields are optional — leave blank to skip.</p>`;
+  for (let i = 0; i < qty; i++) {
+    body.innerHTML += `<div class="serial-input-row">
+      <span class="serial-index">${i + 1}</span>
+      <input class="serial-text-input" id="serial_${i}" type="text" placeholder="Serial #${i+1}" value="${existingList[i] || ''}">
+    </div>`;
+  }
+  document.getElementById('serialModal').classList.add('open');
+  setTimeout(() => document.getElementById('serial_0')?.focus(), 180);
+}
+
+function closeSerialModal() {
+  document.getElementById('serialModal').classList.remove('open');
+}
+
+function confirmSerials() {
+  const qty = parseInt(document.getElementById('f_qty').value, 10);
+  const serials = [];
+  for (let i = 0; i < qty; i++) {
+    const val = document.getElementById('serial_' + i)?.value.trim();
+    if (val) serials.push(val);
+  }
+  document.getElementById('f_serials').value = serials.join(', ');
+  closeSerialModal();
+  if (serials.length) showToast(`${serials.length} serial${serials.length > 1 ? 's' : ''} recorded`, 'success');
+}
+
+// ── Submit ────────────────────────────────────────────────
+async function submitShipment() {
+  const carrier   = document.getElementById('f_carrier').value.trim();
+  const date      = document.getElementById('f_date').value;
+  const type      = document.getElementById('f_type').value;
+  const condition = document.getElementById('f_condition').value;
+  const customer  = document.getElementById('f_customer').value.trim();
+  const qty       = document.getElementById('f_qty').value;
+  const po        = document.getElementById('f_po').value.trim();
+  const desc      = document.getElementById('f_desc').value.trim();
+  const serials   = document.getElementById('f_serials').value.trim();
+
+  if (!carrier || !date || !type || !condition || !customer || !qty) {
+    showToast('Please fill in all required fields', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('submitBtnText').innerHTML = '<span class="spinner"></span>&nbsp;Submitting…';
+
+  try {
+    const result = await apiCall({
+      action: 'addShipment',
+      carrier, dateOfReceipt: date, type, condition,
+      customerName: customer, quantityReceived: qty,
+      poNumber: po, productDescription: desc, serialNumbers: serials
+    });
+    if (result.success) {
+      showToast(`${result.shipmentNumber} recorded successfully`, 'success');
+      clearForm();
+      await loadActive();
+    } else {
+      showToast('Error: ' + (result.error || 'Unknown error'), 'error');
+    }
+  } catch(e) {
+    showToast('Network error. Please try again.', 'error');
+  }
+
+  btn.disabled = false;
+  document.getElementById('submitBtnText').textContent = 'Submit Shipment';
+}
+
+// ── Toggle status ─────────────────────────────────────────
+async function toggleStatus(shipmentNumber) {
+  try {
+    const result = await apiCall({ action: 'toggleStatus', shipmentNumber });
+    if (result.success) {
+      showToast(`${shipmentNumber} moved to ${result.movedTo}`, 'success');
+      await loadActive();
+      await loadCompleted();
+    } else {
+      showToast('Error: ' + (result.error || 'Unknown'), 'error');
+    }
+  } catch(e) { showToast('Network error. Please try again.', 'error'); }
+}
+
+// ── Clear form ────────────────────────────────────────────
+function clearForm() {
+  ['f_carrier','f_type','f_condition','f_customer','f_qty','f_po','f_desc','f_serials'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+}
+
+// ── Toast ─────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+document.getElementById('serialModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSerialModal();
+});
+</script>
+</body>
+</html>
