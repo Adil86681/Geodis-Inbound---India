@@ -531,8 +531,9 @@ function switchTab(tab) {
 }
 
 async function apiCall(params) {
+  params._t = Date.now();
   const url = WEB_APP_URL + '?' + new URLSearchParams(params).toString();
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: 'no-store' });
   return res.json();
 }
 
