@@ -553,7 +553,13 @@ async function loadCompleted() {
     '<tr class="loading-row"><td colspan="11"><span class="spinner"></span>&nbsp; Loading…</td></tr>';
   try {
     const data = await apiCall({ action: 'getCompleted' });
-    completedData = data.rows || [];
+    const rows = data.rows || [];
+    const seen = new Set();
+    completedData = rows.filter(row => {
+      if (seen.has(row[0])) return false;
+      seen.add(row[0]);
+      return true;
+    });
     renderCompletedTable();
   } catch(e) { showToast('Failed to load completed shipments', 'error'); }
 }
@@ -660,9 +666,33 @@ function confirmSerials() {
     const val = document.getElementById('serial_' + i)?.value.trim();
     if (val) serials.push(val);
   }
+
+  // Check for duplicates before confirming
+  if (serials.length) {
+    const dup = findDuplicateSerial(serials);
+    if (dup) {
+      alert(`Serial already entered in Shipment number ${dup.shipmentNumber}\n\nDuplicate serial: ${dup.serial}`);
+      return;
+    }
+  }
+
   document.getElementById('f_serials').value = serials.join(', ');
   closeSerialModal();
   if (serials.length) showToast(`${serials.length} serial${serials.length > 1 ? 's' : ''} recorded`, 'success');
+}
+
+// ── Serial duplicate check ───────────────────────────────
+function findDuplicateSerial(serialList) {
+  const allShipments = [...activeData, ...completedData];
+  for (const serial of serialList) {
+    for (const row of allShipments) {
+      const existingSerials = (row[8] || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      if (existingSerials.includes(serial.toLowerCase())) {
+        return { serial, shipmentNumber: row[0] };
+      }
+    }
+  }
+  return null;
 }
 
 // ── Submit ────────────────────────────────────────────────
@@ -680,6 +710,16 @@ async function submitShipment() {
   if (!carrier || !date || !type || !condition || !customer || !qty) {
     showToast('Please fill in all required fields', 'error');
     return;
+  }
+
+  // Check for duplicate serial numbers
+  if (serials) {
+    const serialList = serials.split(',').map(s => s.trim()).filter(Boolean);
+    const dup = findDuplicateSerial(serialList);
+    if (dup) {
+      alert(`Serial already entered in Shipment number ${dup.shipmentNumber}\n\nDuplicate serial: ${dup.serial}`);
+      return;
+    }
   }
 
   const btn = document.getElementById('submitBtn');
