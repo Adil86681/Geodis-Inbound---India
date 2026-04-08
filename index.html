@@ -565,7 +565,6 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyoBke7y_qq6Y7mwQSc
 
 let activeData = [];
 let completedData = [];
-let skuList = [];
 let acHighlight = -1;
 let acDebounce = null;
 
@@ -573,7 +572,6 @@ window.onload = () => {
   document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
   loadActive();
   loadCompleted();
-  loadSKUList();
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.ac-wrap')) closeAutocomplete();
   });
@@ -755,48 +753,39 @@ function findDuplicateSerial(serialList) {
   return null;
 }
 
-// ── SKU List loading ──────────────────────────────────────
-async function loadSKUList() {
-  try {
-    const data = await apiCall({ action: 'getSKUList' });
-    skuList = data.rows || [];
-  } catch(e) { console.warn('Failed to load SKU list'); }
-}
-
-// ── Autocomplete ─────────────────────────────────────────
+// ── Autocomplete (server-side search) ────────────────────
 function onDescInput() {
   clearTimeout(acDebounce);
   const val = document.getElementById('f_desc').value.trim();
-  // Clear SKU ID when user types (they may be changing their selection)
   document.getElementById('f_skuId').value = '';
   document.getElementById('skuIdDisplay').textContent = '';
   if (val.length < 2) { closeAutocomplete(); return; }
-  acDebounce = setTimeout(() => filterSKUs(val), 150);
+  acDebounce = setTimeout(() => searchSKUs(val), 350);
 }
 
-function filterSKUs(query) {
-  const q = query.toLowerCase();
-  const matches = skuList.filter(sku => {
-    const desc = (sku[1] || '').toLowerCase();
-    const mpn = (sku[2] || '').toLowerCase();
-    return desc.includes(q) || mpn.includes(q);
-  }).slice(0, 15);
-
+async function searchSKUs(query) {
   const dd = document.getElementById('acDropdown');
   acHighlight = -1;
-  if (!matches.length) {
-    dd.innerHTML = '<div class="ac-no-results">No matching SKUs found — you can still type a custom description</div>';
-    dd.classList.add('open');
-    return;
-  }
-  dd.innerHTML = matches.map((sku, i) =>
-    `<div class="ac-item" data-index="${i}" onclick="selectSKU(${i})" onmouseenter="acHighlight=${i};highlightAC()">
-      <div class="ac-item-desc">${escHtml(sku[1] || '')}</div>
-      <div class="ac-item-mpn">${escHtml(sku[2] || '—')}</div>
-    </div>`
-  ).join('');
+  dd.innerHTML = '<div class="ac-loading"><span class="spinner"></span> Searching...</div>';
   dd.classList.add('open');
-  dd._matches = matches;
+
+  try {
+    const data = await apiCall({ action: 'searchSKU', query });
+    const matches = data.rows || [];
+    if (!matches.length) {
+      dd.innerHTML = '<div class="ac-no-results">No matching SKUs found — you can still type a custom description</div>';
+      return;
+    }
+    dd.innerHTML = matches.map((sku, i) =>
+      `<div class="ac-item" data-index="${i}" onclick="selectSKU(${i})" onmouseenter="acHighlight=${i};highlightAC()">
+        <div class="ac-item-desc">${escHtml(sku[1] || '')}</div>
+        <div class="ac-item-mpn">${escHtml(sku[2] || '—')}</div>
+      </div>`
+    ).join('');
+    dd._matches = matches;
+  } catch(e) {
+    dd.innerHTML = '<div class="ac-no-results">Search failed — you can still type a custom description</div>';
+  }
 }
 
 function selectSKU(index) {
