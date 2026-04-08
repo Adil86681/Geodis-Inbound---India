@@ -744,7 +744,7 @@ function findDuplicateSerial(serialList) {
   const allShipments = [...activeData, ...completedData];
   for (const serial of serialList) {
     for (const row of allShipments) {
-      const existingSerials = (row[8] || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      const existingSerials = String(row[8] || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
       if (existingSerials.includes(serial.toLowerCase())) {
         return { serial, shipmentNumber: row[0] };
       }
@@ -917,6 +917,9 @@ function showToast(msg, type = 'success') {
 document.getElementById('serialModal').addEventListener('click', function(e) {
   if (e.target === this) closeSerialModal();
 });
+
+// Debug: confirm all functions loaded
+console.log('All functions loaded successfully');
 </script>
 </body>
 </html>
