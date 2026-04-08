@@ -4,32 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inbound Shipment Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f4f6f9;
+    --bg: #eaf0f6;
     --surface: #ffffff;
-    --surface2: #f8f9fb;
-    --border: #e2e6ed;
-    --border-focus: #4f7ef0;
-    --accent: #2d6ef5;
-    --accent-dim: rgba(45,110,245,0.08);
-    --accent-hover: #1a5ce0;
-    --green: #16a37a;
-    --green-dim: rgba(22,163,122,0.1);
+    --surface2: #f3f6fa;
+    --border: #d4dbe5;
+    --border-focus: #e8546b;
+    --accent: #e8546b;
+    --accent-dim: rgba(232,84,107,0.08);
+    --accent-hover: #d94460;
+    --green: #1e9e5e;
+    --green-dim: rgba(30,158,94,0.1);
     --amber: #d97706;
     --amber-dim: rgba(217,119,6,0.1);
-    --red: #dc2626;
-    --red-dim: rgba(220,38,38,0.08);
+    --red: #d94460;
+    --red-dim: rgba(217,68,96,0.08);
     --purple: #7c3aed;
     --purple-dim: rgba(124,58,237,0.08);
-    --text: #1a1f2e;
-    --text-muted: #6b7280;
+    --text: #1a1d2b;
+    --text-muted: #6b7484;
     --text-dim: #9ca3af;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
     --shadow: 0 4px 12px rgba(0,0,0,0.08);
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'Inter', sans-serif;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,8 +37,8 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: var(--sans);
-    font-size: 14px;
+    font-family: var(--mono);
+    font-size: 15px;
     min-height: 100vh;
   }
 
@@ -62,19 +62,19 @@
     background: var(--accent);
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 8px rgba(45,110,245,0.3);
+    box-shadow: 0 2px 8px rgba(232,84,107,0.3);
   }
   .header-logo svg { width: 17px; height: 17px; }
-  .header-title { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.2px; }
+  .header-title { font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
   .header-divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
-  .header-sub { font-size: 12px; color: var(--text-muted); }
+  .header-sub { font-size: 13px; color: var(--text-muted); }
   .status-pill {
     display: flex; align-items: center; gap: 6px;
     background: var(--green-dim);
-    border: 1px solid rgba(22,163,122,0.2);
+    border: 1px solid rgba(30,158,94,0.2);
     border-radius: 20px;
     padding: 4px 10px;
-    font-size: 11px; font-weight: 500; color: var(--green);
+    font-size: 12px; font-weight: 500; color: var(--green);
     font-family: var(--mono);
   }
   .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2.5s infinite; }
@@ -85,29 +85,34 @@
 
   /* ── Tabs ── */
   .tabs {
-    display: flex;
+    display: flex; gap: 2px;
     margin-bottom: 20px;
-    border-bottom: 2px solid var(--border);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
   }
   .tab {
-    font-size: 13px; font-weight: 500;
+    flex: 1;
+    font-size: 14px; font-weight: 600;
     padding: 10px 20px;
     border: none; cursor: pointer;
     transition: all 0.15s;
     color: var(--text-muted);
     background: transparent;
-    display: flex; align-items: center; gap: 8px;
-    position: relative; bottom: -2px;
-    border-bottom: 2px solid transparent;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    border-radius: 7px;
+    font-family: var(--sans);
+    letter-spacing: 0.02em;
   }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { background: var(--accent); color: #fff; }
   .tab .count {
     background: var(--bg); border: 1px solid var(--border);
     border-radius: 10px; padding: 1px 7px;
-    font-size: 10px; font-family: var(--mono); font-weight: 600; color: var(--text-muted);
+    font-size: 11px; font-family: var(--mono); font-weight: 600; color: var(--text-muted);
   }
-  .tab.active .count { background: var(--accent-dim); border-color: rgba(45,110,245,0.2); color: var(--accent); }
+  .tab.active .count { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.3); color: #fff; }
 
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
@@ -116,7 +121,7 @@
   .form-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 10px;
     margin-bottom: 20px;
     box-shadow: var(--shadow-sm);
     overflow: hidden;
@@ -127,11 +132,11 @@
     display: flex; align-items: center; justify-content: space-between;
     background: var(--surface2);
   }
-  .form-card-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .form-card-title { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
   .shipment-badge {
-    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    font-family: var(--mono); font-size: 14px; font-weight: 600;
     color: var(--accent); background: var(--accent-dim);
-    border: 1px solid rgba(45,110,245,0.2); border-radius: 6px; padding: 4px 12px;
+    border: 1px solid rgba(232,84,107,0.2); border-radius: 6px; padding: 4px 12px;
   }
   .form-body {
     padding: 20px;
@@ -141,30 +146,33 @@
   }
   .form-group { display: flex; flex-direction: column; gap: 5px; }
   .form-group.half { grid-column: span 2; }
+  .form-group.full { grid-column: span 4; }
 
-  label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
-  label .optional { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-dim); font-size: 10px; }
+  label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+  label .optional { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-dim); font-size: 11px; }
+  label .required { color: var(--red); font-weight: 700; margin-left: 2px; }
 
-  input, select {
+  input, select, textarea {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 7px;
     color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
+    font-family: var(--mono);
+    font-size: 14px;
     padding: 8px 11px;
     transition: border-color 0.15s, box-shadow 0.15s;
     outline: none;
     width: 100%;
   }
-  input:focus, select:focus {
+  textarea { resize: vertical; min-height: 60px; }
+  input:focus, select:focus, textarea:focus {
     border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(79,126,240,0.1);
+    box-shadow: 0 0 0 3px rgba(232,84,107,0.1);
   }
-  input::placeholder { color: var(--text-dim); }
+  input::placeholder, textarea::placeholder { color: var(--text-dim); }
   select {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7484' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
   }
 
@@ -173,7 +181,7 @@
   .serial-row input {
     flex: 1;
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 13px;
   }
   .serial-popup-btn {
     flex-shrink: 0;
@@ -187,7 +195,7 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-  .serial-popup-btn:hover { background: var(--accent-dim); border-color: rgba(45,110,245,0.3); color: var(--accent); }
+  .serial-popup-btn:hover { background: var(--accent-dim); border-color: rgba(232,84,107,0.3); color: var(--accent); }
 
   /* Form footer */
   .form-footer {
@@ -197,12 +205,13 @@
     background: var(--surface2);
   }
   .btn {
-    font-size: 12px; font-weight: 600;
+    font-size: 13px; font-weight: 600;
     padding: 8px 18px; border-radius: 7px; border: none; cursor: pointer;
     transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono);
   }
   .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 3px 10px rgba(45,110,245,0.3); transform: translateY(-1px); }
+  .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 3px 10px rgba(232,84,107,0.3); transform: translateY(-1px); }
   .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
   .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
   .btn-ghost:hover { background: var(--bg); color: var(--text); }
@@ -211,7 +220,7 @@
   .table-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
   }
@@ -221,19 +230,19 @@
     display: flex; align-items: center; justify-content: space-between;
     background: var(--surface2);
   }
-  .table-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .table-title { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
   .refresh-btn {
-    font-size: 11px; font-family: var(--mono); color: var(--text-muted);
+    font-size: 12px; font-family: var(--mono); color: var(--text-muted);
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 6px; padding: 5px 11px; cursor: pointer;
     transition: all 0.15s; display: flex; align-items: center; gap: 5px;
   }
-  .refresh-btn:hover { color: var(--accent); border-color: rgba(45,110,245,0.3); background: var(--accent-dim); }
+  .refresh-btn:hover { color: var(--accent); border-color: rgba(232,84,107,0.3); background: var(--accent-dim); }
 
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; }
   thead th {
-    font-size: 10px; font-weight: 700; color: var(--text-muted);
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
     text-transform: uppercase; letter-spacing: 0.7px;
     padding: 10px 14px; text-align: left;
     border-bottom: 1px solid var(--border);
@@ -241,40 +250,41 @@
   }
   tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
   tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: #fafbfd; }
+  tbody tr:hover { background: var(--surface2); }
   tbody td {
-    padding: 11px 14px; font-size: 13px; color: var(--text);
+    padding: 11px 14px; font-size: 14px; color: var(--text);
     vertical-align: middle; max-width: 160px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .td-shipnum { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--accent); }
-  .td-date { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
-  .td-mono { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+  .td-shipnum { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--accent); }
+  .td-date { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+  .td-mono { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
 
   .badge {
-    display: inline-block; font-size: 10px; font-weight: 600;
+    display: inline-block; font-size: 11px; font-weight: 600;
     padding: 2px 8px; border-radius: 4px;
     text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
   }
   .badge-box    { background: var(--amber-dim);  color: var(--amber);  border: 1px solid rgba(217,119,6,0.2); }
   .badge-pallet { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(124,58,237,0.2); }
-  .badge-new    { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(22,163,122,0.2); }
-  .badge-used   { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(220,38,38,0.15); }
+  .badge-new    { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(30,158,94,0.2); }
+  .badge-used   { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(217,68,96,0.15); }
 
   .action-btn {
-    font-size: 11px; font-weight: 600;
+    font-size: 12px; font-weight: 600;
     padding: 5px 10px; border-radius: 5px; border: none;
     cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    font-family: var(--mono);
   }
-  .btn-complete   { background: var(--green-dim); color: var(--green); border: 1px solid rgba(22,163,122,0.2); }
+  .btn-complete   { background: var(--green-dim); color: var(--green); border: 1px solid rgba(30,158,94,0.2); }
   .btn-complete:hover   { background: var(--green); color: #fff; }
   .btn-reactivate { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(217,119,6,0.2); }
   .btn-reactivate:hover { background: var(--amber); color: #fff; }
 
   .empty-state { text-align: center; padding: 52px 24px; color: var(--text-dim); }
   .empty-state svg { opacity: 0.35; margin-bottom: 10px; }
-  .empty-state p { font-size: 13px; color: var(--text-muted); }
-  .loading-row td { text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; }
+  .empty-state p { font-size: 14px; color: var(--text-muted); }
+  .loading-row td { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
 
   /* ── Modal ── */
   .modal-overlay {
@@ -301,20 +311,20 @@
     display: flex; align-items: center; justify-content: space-between;
     background: var(--surface2); border-radius: 14px 14px 0 0;
   }
-  .modal-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .modal-title { font-size: 14px; font-weight: 600; color: var(--text); }
   .modal-close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 17px; padding: 2px 6px; border-radius: 4px; transition: all 0.1s; }
   .modal-close:hover { color: var(--text); background: var(--border); }
   .modal-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 8px; }
-  .modal-hint { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .modal-hint { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
   .serial-input-row { display: flex; align-items: center; gap: 10px; }
-  .serial-index { font-family: var(--mono); font-size: 11px; color: var(--text-dim); width: 22px; text-align: right; flex-shrink: 0; }
+  .serial-index { font-family: var(--mono); font-size: 12px; color: var(--text-dim); width: 22px; text-align: right; flex-shrink: 0; }
   .serial-text-input {
     flex: 1; background: var(--surface); border: 1px solid var(--border);
     border-radius: 6px; color: var(--text);
-    font-family: var(--mono); font-size: 12px; padding: 7px 11px;
+    font-family: var(--mono); font-size: 13px; padding: 7px 11px;
     outline: none; transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .serial-text-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(79,126,240,0.1); }
+  .serial-text-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(232,84,107,0.1); }
   .modal-footer {
     padding: 14px 22px; border-top: 1px solid var(--border);
     display: flex; justify-content: flex-end; gap: 8px;
@@ -326,7 +336,7 @@
     position: fixed; bottom: 24px; right: 24px;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 10px; padding: 12px 18px;
-    font-size: 12px; font-weight: 500; color: var(--text);
+    font-size: 13px; font-weight: 500; color: var(--text);
     z-index: 1000; display: flex; align-items: center; gap: 9px;
     transform: translateY(70px); opacity: 0;
     transition: all 0.28s cubic-bezier(.34,1.56,.64,1);
@@ -334,13 +344,40 @@
   }
   .toast.show { transform: translateY(0); opacity: 1; }
   .toast-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .toast.success { border-color: rgba(22,163,122,0.3); }
+  .toast.success { border-color: rgba(30,158,94,0.3); }
   .toast.success .toast-dot { background: var(--green); }
-  .toast.error { border-color: rgba(220,38,38,0.25); }
+  .toast.error { border-color: rgba(217,68,96,0.25); }
   .toast.error .toast-dot { background: var(--red); }
 
-  .spinner { width: 13px; height: 13px; border: 2px solid rgba(45,110,245,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+  .spinner { width: 13px; height: 13px; border: 2px solid rgba(232,84,107,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Autocomplete ── */
+  .ac-wrap { position: relative; }
+  .ac-dropdown {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 7px; margin-top: 4px;
+    max-height: 220px; overflow-y: auto;
+    box-shadow: var(--shadow); z-index: 150;
+    display: none;
+  }
+  .ac-dropdown.open { display: block; }
+  .ac-item {
+    padding: 8px 12px; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover, .ac-item.highlighted { background: var(--surface2); }
+  .ac-item-desc { font-size: 13px; color: var(--text); }
+  .ac-item-mpn { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-top: 2px; }
+  .ac-no-results { padding: 10px 12px; font-size: 12px; color: var(--text-dim); }
+  .ac-loading { padding: 10px 12px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+  .sku-id-display {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    margin-top: 3px; min-height: 16px;
+  }
 </style>
 </head>
 <body>
@@ -357,7 +394,7 @@
     </div>
     <span class="header-title">Inbound Shipment Tracker</span>
     <div class="header-divider"></div>
-    <span class="header-sub">Geodis Warehouse · Receiving Log</span>
+    <span class="header-sub">Geodis Warehouse - India · Receiving Log</span>
   </div>
   <div class="status-pill">
     <div class="status-dot"></div>
@@ -385,15 +422,19 @@
       </div>
       <div class="form-body">
         <div class="form-group">
-          <label>Carrier</label>
+          <label>Carrier <span class="required">*</span></label>
           <input type="text" id="f_carrier" placeholder="e.g. DHL, FedEx, UPS">
         </div>
         <div class="form-group">
-          <label>Date of Receipt</label>
+          <label>Tracking # <span class="optional">— optional</span></label>
+          <input type="text" id="f_tracking" placeholder="Tracking number">
+        </div>
+        <div class="form-group">
+          <label>Date of Receipt <span class="required">*</span></label>
           <input type="date" id="f_date">
         </div>
         <div class="form-group">
-          <label>Type</label>
+          <label>Type <span class="required">*</span></label>
           <select id="f_type">
             <option value="">— Select —</option>
             <option value="Box">Box</option>
@@ -401,7 +442,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Condition</label>
+          <label>Condition <span class="required">*</span></label>
           <select id="f_condition">
             <option value="">— Select —</option>
             <option value="New">New</option>
@@ -409,11 +450,11 @@
           </select>
         </div>
         <div class="form-group half">
-          <label>Customer Name</label>
+          <label>Customer Name <span class="required">*</span></label>
           <input type="text" id="f_customer" placeholder="Customer name">
         </div>
         <div class="form-group">
-          <label>Quantity Received</label>
+          <label>Quantity Received <span class="required">*</span></label>
           <input type="number" id="f_qty" min="1" placeholder="0" oninput="onQtyChange()">
         </div>
         <div class="form-group">
@@ -422,10 +463,19 @@
         </div>
         <div class="form-group half">
           <label>Product Description</label>
-          <input type="text" id="f_desc" placeholder="Brief description of items">
+          <div class="ac-wrap">
+            <input type="text" id="f_desc" placeholder="Search by description or MPN..." autocomplete="off" oninput="onDescInput()" onkeydown="onDescKeydown(event)">
+            <input type="hidden" id="f_skuId">
+            <div class="ac-dropdown" id="acDropdown"></div>
+            <div class="sku-id-display" id="skuIdDisplay"></div>
+          </div>
         </div>
         <div class="form-group half">
-          <label>Serial Number(s) <span class="optional">— type directly or use popup &nbsp;·&nbsp; optional</span></label>
+          <label>Shipment Comments <span class="optional">— optional</span></label>
+          <textarea id="f_comments" placeholder="Any additional notes about this shipment"></textarea>
+        </div>
+        <div class="form-group half">
+          <label>Serial Number(s) <span class="optional">— type directly or use popup · optional</span></label>
           <div class="serial-row">
             <input type="text" id="f_serials" placeholder="SN-001, SN-002, SN-003… or leave blank">
             <button class="serial-popup-btn" onclick="openSerialModal()" title="Open guided serial entry popup">⊞</button>
@@ -449,14 +499,14 @@
         <table>
           <thead>
             <tr>
-              <th>Shipment #</th><th>Carrier</th><th>Date Received</th>
+              <th>Shipment #</th><th>Carrier</th><th>Tracking #</th><th>Date Received</th>
               <th>Type</th><th>Customer</th><th>Condition</th>
-              <th>Qty</th><th>Description</th><th>Serials</th>
+              <th>Qty</th><th>SKU ID</th><th>Description</th><th>Comments</th><th>Serials</th>
               <th>PO Number</th><th>Action</th>
             </tr>
           </thead>
           <tbody id="activeBody">
-            <tr class="loading-row"><td colspan="11"><span class="spinner"></span>&nbsp; Loading…</td></tr>
+            <tr class="loading-row"><td colspan="14"><span class="spinner"></span>&nbsp; Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -474,14 +524,14 @@
         <table>
           <thead>
             <tr>
-              <th>Shipment #</th><th>Carrier</th><th>Date Received</th>
+              <th>Shipment #</th><th>Carrier</th><th>Tracking #</th><th>Date Received</th>
               <th>Type</th><th>Customer</th><th>Condition</th>
-              <th>Qty</th><th>Description</th><th>Serials</th>
+              <th>Qty</th><th>SKU ID</th><th>Description</th><th>Comments</th><th>Serials</th>
               <th>PO Number</th><th>Action</th>
             </tr>
           </thead>
           <tbody id="completedBody">
-            <tr class="loading-row"><td colspan="11"><span class="spinner"></span>&nbsp; Loading…</td></tr>
+            <tr class="loading-row"><td colspan="14"><span class="spinner"></span>&nbsp; Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -515,11 +565,18 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyoBke7y_qq6Y7mwQSc
 
 let activeData = [];
 let completedData = [];
+let skuList = [];
+let acHighlight = -1;
+let acDebounce = null;
 
 window.onload = () => {
   document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
   loadActive();
   loadCompleted();
+  loadSKUList();
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.ac-wrap')) closeAutocomplete();
+  });
 };
 
 function switchTab(tab) {
@@ -539,7 +596,7 @@ async function apiCall(params) {
 
 async function loadActive() {
   document.getElementById('activeBody').innerHTML =
-    '<tr class="loading-row"><td colspan="11"><span class="spinner"></span>&nbsp; Loading…</td></tr>';
+    '<tr class="loading-row"><td colspan="14"><span class="spinner"></span>&nbsp; Loading…</td></tr>';
   try {
     const data = await apiCall({ action: 'getShipments' });
     activeData = data.rows || [];
@@ -550,7 +607,7 @@ async function loadActive() {
 
 async function loadCompleted() {
   document.getElementById('completedBody').innerHTML =
-    '<tr class="loading-row"><td colspan="11"><span class="spinner"></span>&nbsp; Loading…</td></tr>';
+    '<tr class="loading-row"><td colspan="14"><span class="spinner"></span>&nbsp; Loading…</td></tr>';
   try {
     const data = await apiCall({ action: 'getCompleted' });
     const rows = data.rows || [];
@@ -568,7 +625,7 @@ function renderActiveTable() {
   const tbody = document.getElementById('activeBody');
   document.getElementById('activeCount').textContent = activeData.length;
   if (!activeData.length) {
-    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state">
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 3H8l-2 4h12l-2-4z"/></svg>
       <p>No active shipments</p></div></td></tr>`;
     return;
@@ -580,7 +637,7 @@ function renderCompletedTable() {
   const tbody = document.getElementById('completedBody');
   document.getElementById('completedCount').textContent = completedData.length;
   if (!completedData.length) {
-    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state">
       <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
       <p>No completed shipments</p></div></td></tr>`;
     return;
@@ -589,7 +646,7 @@ function renderCompletedTable() {
 }
 
 function buildRow(row, type) {
-  const [shipNum, carrier, date, rtype, customer, condition, qty, desc, serials, po] = row;
+  const [shipNum, carrier, date, rtype, customer, condition, qty, desc, serials, po, tracking, comments, skuId] = row;
   const typeBadge = rtype === 'Pallet'
     ? `<span class="badge badge-pallet">Pallet</span>`
     : `<span class="badge badge-box">Box</span>`;
@@ -604,12 +661,15 @@ function buildRow(row, type) {
   return `<tr>
     <td class="td-shipnum">${shipNum}</td>
     <td>${carrier || '—'}</td>
+    <td class="td-mono">${tracking || '—'}</td>
     <td class="td-date">${date || '—'}</td>
     <td>${typeBadge}</td>
     <td>${customer || '—'}</td>
     <td>${condBadge}</td>
     <td style="font-weight:600;font-family:var(--mono)">${qty || '—'}</td>
+    <td class="td-mono">${skuId || '—'}</td>
     <td title="${desc || ''}">${trunc(desc, 28)}</td>
+    <td title="${comments || ''}">${trunc(comments, 28)}</td>
     <td class="td-mono" title="${serials || ''}">${trunc(serials, 28)}</td>
     <td class="td-mono">${po || '—'}</td>
     <td>${actionBtn}</td>
@@ -695,9 +755,91 @@ function findDuplicateSerial(serialList) {
   return null;
 }
 
+// ── SKU List loading ──────────────────────────────────────
+async function loadSKUList() {
+  try {
+    const data = await apiCall({ action: 'getSKUList' });
+    skuList = data.rows || [];
+  } catch(e) { console.warn('Failed to load SKU list'); }
+}
+
+// ── Autocomplete ─────────────────────────────────────────
+function onDescInput() {
+  clearTimeout(acDebounce);
+  const val = document.getElementById('f_desc').value.trim();
+  // Clear SKU ID when user types (they may be changing their selection)
+  document.getElementById('f_skuId').value = '';
+  document.getElementById('skuIdDisplay').textContent = '';
+  if (val.length < 2) { closeAutocomplete(); return; }
+  acDebounce = setTimeout(() => filterSKUs(val), 150);
+}
+
+function filterSKUs(query) {
+  const q = query.toLowerCase();
+  const matches = skuList.filter(sku => {
+    const desc = (sku[1] || '').toLowerCase();
+    const mpn = (sku[2] || '').toLowerCase();
+    return desc.includes(q) || mpn.includes(q);
+  }).slice(0, 15);
+
+  const dd = document.getElementById('acDropdown');
+  acHighlight = -1;
+  if (!matches.length) {
+    dd.innerHTML = '<div class="ac-no-results">No matching SKUs found — you can still type a custom description</div>';
+    dd.classList.add('open');
+    return;
+  }
+  dd.innerHTML = matches.map((sku, i) =>
+    `<div class="ac-item" data-index="${i}" onclick="selectSKU(${i})" onmouseenter="acHighlight=${i};highlightAC()">
+      <div class="ac-item-desc">${escHtml(sku[1] || '')}</div>
+      <div class="ac-item-mpn">${escHtml(sku[2] || '—')}</div>
+    </div>`
+  ).join('');
+  dd.classList.add('open');
+  dd._matches = matches;
+}
+
+function selectSKU(index) {
+  const dd = document.getElementById('acDropdown');
+  const matches = dd._matches;
+  if (!matches || !matches[index]) return;
+  const sku = matches[index];
+  document.getElementById('f_desc').value = sku[1] || '';
+  document.getElementById('f_skuId').value = sku[0] || '';
+  document.getElementById('skuIdDisplay').textContent = sku[0] ? 'SKU: ' + sku[0] : '';
+  closeAutocomplete();
+}
+
+function closeAutocomplete() {
+  document.getElementById('acDropdown').classList.remove('open');
+  acHighlight = -1;
+}
+
+function highlightAC() {
+  const items = document.querySelectorAll('#acDropdown .ac-item');
+  items.forEach((el, i) => el.classList.toggle('highlighted', i === acHighlight));
+}
+
+function onDescKeydown(e) {
+  const dd = document.getElementById('acDropdown');
+  if (!dd.classList.contains('open') || !dd._matches) return;
+  const max = dd._matches.length;
+  if (e.key === 'ArrowDown') { e.preventDefault(); acHighlight = (acHighlight + 1) % max; highlightAC(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); acHighlight = (acHighlight - 1 + max) % max; highlightAC(); }
+  else if (e.key === 'Enter' && acHighlight >= 0) { e.preventDefault(); selectSKU(acHighlight); }
+  else if (e.key === 'Escape') { closeAutocomplete(); }
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
 // ── Submit ────────────────────────────────────────────────
 async function submitShipment() {
   const carrier   = document.getElementById('f_carrier').value.trim();
+  const tracking  = document.getElementById('f_tracking').value.trim();
   const date      = document.getElementById('f_date').value;
   const type      = document.getElementById('f_type').value;
   const condition = document.getElementById('f_condition').value;
@@ -705,6 +847,8 @@ async function submitShipment() {
   const qty       = document.getElementById('f_qty').value;
   const po        = document.getElementById('f_po').value.trim();
   const desc      = document.getElementById('f_desc').value.trim();
+  const skuId     = document.getElementById('f_skuId').value.trim();
+  const comments  = document.getElementById('f_comments').value.trim();
   const serials   = document.getElementById('f_serials').value.trim();
 
   if (!carrier || !date || !type || !condition || !customer || !qty) {
@@ -729,9 +873,9 @@ async function submitShipment() {
   try {
     const result = await apiCall({
       action: 'addShipment',
-      carrier, dateOfReceipt: date, type, condition,
+      carrier, trackingNumber: tracking, dateOfReceipt: date, type, condition,
       customerName: customer, quantityReceived: qty,
-      poNumber: po, productDescription: desc, serialNumbers: serials
+      poNumber: po, productDescription: desc, skuId, shipmentComments: comments, serialNumbers: serials
     });
     if (result.success) {
       showToast(`${result.shipmentNumber} recorded successfully`, 'success');
@@ -764,9 +908,10 @@ async function toggleStatus(shipmentNumber) {
 
 // ── Clear form ────────────────────────────────────────────
 function clearForm() {
-  ['f_carrier','f_type','f_condition','f_customer','f_qty','f_po','f_desc','f_serials'].forEach(id => {
+  ['f_carrier','f_tracking','f_type','f_condition','f_customer','f_qty','f_po','f_desc','f_skuId','f_comments','f_serials'].forEach(id => {
     document.getElementById(id).value = '';
   });
+  document.getElementById('skuIdDisplay').textContent = '';
   document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
 }
 
